@@ -1,0 +1,40 @@
+# Rust
+/target/
+/Cargo.lock
+*.pdb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Config
+config.json
+config.toml
+presets/custom_*.json
+
+# Web build artifacts
+/pkg/
+/www/dist/
+/www/node_modules/
+
+# Generated
+*.wasm
+*.js.map
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

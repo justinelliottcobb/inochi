@@ -1,0 +1,164 @@
+{
+  "name": "Classic Particle Life",
+  "description": "The original particle life system with emergent behaviors",
+  "physics": {
+    "integration_method": "Verlet",
+    "dt": 0.016666666666666666,
+    "max_force": 1000.0,
+    "max_velocity": 100.0,
+    "enable_collisions": false,
+    "collision_restitution": 0.8
+  },
+  "rendering": {
+    "window_width": 1200,
+    "window_height": 800,
+    "background_color": [0.02, 0.02, 0.05, 1.0],
+    "particle_render_mode": "Circles",
+    "point_size": 2.0,
+    "line_width": 1.0,
+    "enable_trails": true,
+    "trail_length": 30,
+    "trail_fade": 0.95,
+    "enable_bloom": false,
+    "bloom_intensity": 1.0,
+    "enable_grid": false,
+    "grid_color": [0.2, 0.2, 0.2, 0.3],
+    "grid_spacing": 50.0,
+    "camera_zoom": 1.0,
+    "camera_position": [0.0, 0.0],
+    "show_velocity_vectors": false,
+    "show_force_vectors": false,
+    "show_particle_ids": false,
+    "color_by_velocity": false,
+    "color_by_energy": false,
+    "hdr_exposure": 1.0
+  },
+  "particles": {
+    "max_particles": 500,
+    "spawn_rate": 0.0,
+    "initial_particle_count": 300,
+    "default_mass": 1.0,
+    "default_charge": 0.0,
+    "default_size": 2.0,
+    "default_lifespan": "inf",
+    "default_color": [1.0, 1.0, 1.0, 1.0],
+    "spawn_area": {
+      "Circle": {
+        "center": [0.0, 0.0],
+        "radius": 150.0
+      }
+    },
+    "initial_velocity_range": [[-5.0, -5.0], [5.0, 5.0]],
+    "mass_variation": 0.1,
+    "size_variation": 0.2,
+    "color_variation": 0.1,
+    "species_weights": {
+      "0": 0.4,
+      "1": 0.3,
+      "2": 0.3
+    }
+  },
+  "forces": {
+    "global_forces": [
+      {
+        "Damping": {
+          "coefficient": 0.02
+        }
+      },
+      {
+        "Brownian": {
+          "intensity": 0.5
+        }
+      }
+    ],
+    "species_interactions": {
+      "(0,0)": [
+        {
+          "Repulsion": {
+            "strength": 20.0,
+            "max_distance": 30.0
+          }
+        }
+      ],
+      "(0,1)": [
+        {
+          "Attraction": {
+            "strength": 15.0,
+            "max_distance": 80.0
+          }
+        }
+      ],
+      "(0,2)": [
+        {
+          "Repulsion": {
+            "strength": 50.0,
+            "max_distance": 60.0
+          }
+        }
+      ],
+      "(1,1)": [
+        {
+          "Attraction": {
+            "strength": 10.0,
+            "max_distance": 50.0
+          }
+        }
+      ],
+      "(1,2)": [
+        {
+          "Attraction": {
+            "strength": 8.0,
+            "max_distance": 70.0
+          }
+        }
+      ],
+      "(2,2)": [
+        {
+          "Repulsion": {
+            "strength": 30.0,
+            "max_distance": 40.0
+          }
+        }
+      ]
+    },
+    "enable_gravity": false,
+    "gravity_strength": 100.0,
+    "enable_electromagnetic": false,
+    "electromagnetic_strength": 100.0,
+    "enable_damping": true,
+    "damping_coefficient": 0.02,
+    "enable_brownian": true,
+    "brownian_intensity": 0.5,
+    "boundary_forces": {
+      "enable_boundaries": true,
+      "boundary_type": "Reflective",
+      "bounds": [[-300.0, -200.0], [300.0, 200.0]],
+      "boundary_strength": 100.0,
+      "boundary_damping": 0.8
+    }
+  },
+  "ui": {
+    "show_ui": true,
+    "show_performance_stats": true,
+    "show_particle_count": true,
+    "show_energy_stats": false,
+    "show_force_controls": true,
+    "show_rendering_controls": true,
+    "show_physics_controls": true,
+    "ui_scale": 1.0,
+    "enable_keyboard_shortcuts": true
+  },
+  "performance": {
+    "enable_spatial_partitioning": true,
+    "spatial_partition_size": 50.0,
+    "max_interactions_per_particle": 100,
+    "enable_multithreading": true,
+    "thread_count": null,
+    "target_fps": 60.0,
+    "adaptive_quality": true,
+    "lod_distance_threshold": 500.0,
+    "enable_frustum_culling": true,
+    "max_gpu_particles": 10000,
+    "enable_gpu_compute": false
+  }
+}

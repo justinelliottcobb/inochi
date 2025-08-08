@@ -1,0 +1,116 @@
+{
+  "name": "N-Body Gravity System",
+  "description": "Realistic gravitational simulation with orbital mechanics",
+  "physics": {
+    "integration_method": "Verlet",
+    "dt": 0.016666666666666666,
+    "max_force": 2000.0,
+    "max_velocity": 200.0,
+    "enable_collisions": true,
+    "collision_restitution": 0.3
+  },
+  "rendering": {
+    "window_width": 1200,
+    "window_height": 800,
+    "background_color": [0.01, 0.01, 0.03, 1.0],
+    "particle_render_mode": "Sprites",
+    "point_size": 1.0,
+    "line_width": 1.0,
+    "enable_trails": true,
+    "trail_length": 100,
+    "trail_fade": 0.98,
+    "enable_bloom": true,
+    "bloom_intensity": 1.2,
+    "enable_grid": false,
+    "grid_color": [0.1, 0.1, 0.1, 0.2],
+    "grid_spacing": 100.0,
+    "camera_zoom": 0.8,
+    "camera_position": [0.0, 0.0],
+    "show_velocity_vectors": false,
+    "show_force_vectors": false,
+    "show_particle_ids": false,
+    "color_by_velocity": false,
+    "color_by_energy": true,
+    "hdr_exposure": 1.2
+  },
+  "particles": {
+    "max_particles": 100,
+    "spawn_rate": 0.0,
+    "initial_particle_count": 50,
+    "default_mass": 1.0,
+    "default_charge": 0.0,
+    "default_size": 3.0,
+    "default_lifespan": "inf",
+    "default_color": [0.8, 0.8, 1.0, 1.0],
+    "spawn_area": {
+      "Ring": {
+        "center": [0.0, 0.0],
+        "inner_radius": 80.0,
+        "outer_radius": 250.0
+      }
+    },
+    "initial_velocity_range": [[-30.0, -30.0], [30.0, 30.0]],
+    "mass_variation": 0.5,
+    "size_variation": 0.3,
+    "color_variation": 0.2,
+    "species_weights": {
+      "0": 0.1,
+      "1": 0.9
+    }
+  },
+  "forces": {
+    "global_forces": [
+      {
+        "Gravity": {
+          "strength": 800.0,
+          "min_distance": 8.0
+        }
+      },
+      {
+        "Damping": {
+          "coefficient": 0.001
+        }
+      }
+    ],
+    "species_interactions": {},
+    "enable_gravity": true,
+    "gravity_strength": 800.0,
+    "enable_electromagnetic": false,
+    "electromagnetic_strength": 100.0,
+    "enable_damping": true,
+    "damping_coefficient": 0.001,
+    "enable_brownian": false,
+    "brownian_intensity": 0.0,
+    "boundary_forces": {
+      "enable_boundaries": false,
+      "boundary_type": "Wrapping",
+      "bounds": [[-500.0, -400.0], [500.0, 400.0]],
+      "boundary_strength": 100.0,
+      "boundary_damping": 0.8
+    }
+  },
+  "ui": {
+    "show_ui": true,
+    "show_performance_stats": true,
+    "show_particle_count": true,
+    "show_energy_stats": true,
+    "show_force_controls": true,
+    "show_rendering_controls": true,
+    "show_physics_controls": true,
+    "ui_scale": 1.0,
+    "enable_keyboard_shortcuts": true
+  },
+  "performance": {
+    "enable_spatial_partitioning": true,
+    "spatial_partition_size": 100.0,
+    "max_interactions_per_particle": 50,
+    "enable_multithreading": true,
+    "thread_count": null,
+    "target_fps": 60.0,
+    "adaptive_quality": true,
+    "lod_distance_threshold": 800.0,
+    "enable_frustum_culling": true,
+    "max_gpu_particles": 1000,
+    "enable_gpu_compute": false
+  }
+}
