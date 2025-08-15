@@ -10,6 +10,7 @@ pub mod wasm;
 
 use nannou::prelude::*;
 use nannou_egui::{self, egui, Egui};
+use glam::Vec2;
 use particle::ParticleSystem;
 use forces::PhysicsEngine;
 use renderer::ParticleRenderer;
@@ -298,9 +299,13 @@ impl App {
         let presets = Preset::all();
         let preset_names: Vec<&str> = presets.iter().map(|p| p.name()).collect();
         
-        if ui.combo_box_with_label("Preset", &preset_names[self.ui_state.selected_preset]).changed() {
-            // Combo box selection changed
-        }
+        egui::ComboBox::from_label("Preset")
+            .selected_text(&preset_names[self.ui_state.selected_preset])
+            .show_ui(ui, |ui| {
+                for (i, name) in preset_names.iter().enumerate() {
+                    ui.selectable_value(&mut self.ui_state.selected_preset, i, *name);
+                }
+            });
         
         for (i, preset) in presets.iter().enumerate() {
             if ui.button(preset.name()).clicked() {
@@ -481,7 +486,7 @@ impl App {
 
     fn reset_simulation(&mut self) {
         if let Some(ref preset) = self.current_preset.clone() {
-            self.apply_preset(preset);
+            self.apply_preset(preset.clone());
         } else {
             self.particle_system.clear();
         }
