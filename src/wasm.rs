@@ -219,8 +219,7 @@ pub fn set_camera_zoom(zoom: f32) {
 pub fn handle_mouse_drag(dx: f32, dy: f32) {
     if let Some(ref app_mutex) = unsafe { &GLOBAL_APP } {
         if let Ok(mut app) = app_mutex.lock() {
-            use glam::Vec2;
-            app.renderer.handle_pan(Vec2::new(dx, dy));
+            app.renderer.handle_pan(nannou::geom::Vec2::new(dx, dy));
         }
     }
 }
