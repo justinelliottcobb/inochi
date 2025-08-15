@@ -6,7 +6,7 @@ description = "Extensible particle life system with advanced rendering and physi
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-nannou = "0.19"
+# nannou is defined per-target below
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 toml = "0.8"
@@ -21,11 +21,23 @@ tempfile = "3.8"
 tokenizers = { version = "0.14.0", default-features = false, features = ["unstable_wasm"] }
 getrandom = { version = "0.2", features = ["js"] }
 
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+nannou = "0.19"
+
 [target.'cfg(target_arch = "wasm32")'.dependencies]
+nannou = { version = "0.19", features = ["wasm-experimental"] }
 wasm-bindgen = { version = "0.2", optional = true }
+wasm-bindgen-futures = "0.4"
 console_error_panic_hook = "0.1"
 wee_alloc = "0.4"
-web-sys = "0.3"
+web-sys = { version = "0.3", features = [
+  "console",
+  "Document",
+  "Element",
+  "HtmlCanvasElement",
+  "Window",
+  "Navigator",
+] }
 js-sys = "0.3"
 
 [lib]
