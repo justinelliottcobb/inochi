@@ -194,20 +194,22 @@ impl ParticleSystem {
             }
         }
 
+        let bounds = self.bounds;
+        let wrap_boundaries = self.wrap_boundaries;
         for particle in &mut self.particles {
             particle.velocity *= self.damping;
             particle.update(dt);
             
-            if let Some((min_bounds, max_bounds)) = self.bounds {
-                self.apply_boundary_conditions(particle, min_bounds, max_bounds);
+            if let Some((min_bounds, max_bounds)) = bounds {
+                Self::apply_boundary_conditions(particle, min_bounds, max_bounds, wrap_boundaries);
             }
         }
 
         self.particles.retain(|p| p.is_alive());
     }
 
-    fn apply_boundary_conditions(&self, particle: &mut Particle, min_bounds: Vec2, max_bounds: Vec2) {
-        if self.wrap_boundaries {
+    fn apply_boundary_conditions(particle: &mut Particle, min_bounds: Vec2, max_bounds: Vec2, wrap_boundaries: bool) {
+        if wrap_boundaries {
             if particle.position.x < min_bounds.x {
                 particle.position.x = max_bounds.x;
             } else if particle.position.x > max_bounds.x {

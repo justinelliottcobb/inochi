@@ -4,6 +4,15 @@ use crate::particle::{Particle, ParticleSystem};
 use crate::config::{RenderConfig, ParticleRenderMode};
 use std::collections::VecDeque;
 
+// Conversion helpers between glam::Vec2 (0.25) and nannou::geom::Vec2 (0.17)
+fn glam_to_nannou(v: glam::Vec2) -> Vec2 {
+    Vec2::new(v.x, v.y)
+}
+
+fn nannou_to_glam(v: Vec2) -> glam::Vec2 {
+    glam::Vec2::new(v.x, v.y)
+}
+
 pub struct ParticleRenderer {
     config: RenderConfig,
     trail_history: Vec<VecDeque<Vec2>>,
@@ -126,7 +135,7 @@ impl ParticleRenderer {
         self.config = config;
         // Update camera settings
         self.camera.zoom = self.config.camera_zoom;
-        self.camera.position = self.config.camera_position;
+        self.camera.position = glam_to_nannou(self.config.camera_position);
     }
 
     pub fn update(&mut self, system: &ParticleSystem, dt: f32) {
@@ -152,7 +161,7 @@ impl ParticleRenderer {
         // Update trail positions
         for (i, particle) in system.particles.iter().enumerate() {
             if let Some(trail) = self.trail_history.get_mut(i) {
-                trail.push_front(particle.position);
+                trail.push_front(glam_to_nannou(particle.position));
                 
                 // Limit trail length
                 while trail.len() > self.config.trail_length {
@@ -257,7 +266,7 @@ impl ParticleRenderer {
         );
 
         for particle in &system.particles {
-            let screen_pos = self.camera.world_to_screen(particle.position, screen_size);
+            let screen_pos = self.camera.world_to_screen(glam_to_nannou(particle.position), screen_size);
             
             // Skip particles outside screen bounds for performance
             if screen_pos.x < -50.0 || screen_pos.x > screen_size.x + 50.0 ||
@@ -303,7 +312,7 @@ impl ParticleRenderer {
                         .color(rgba(color.red, color.green, color.blue, color.alpha * 0.2));
                 },
                 ParticleRenderMode::Lines => {
-                    let vel_end = screen_pos + particle.velocity * 0.1 * self.camera.zoom;
+                    let vel_end = screen_pos + glam_to_nannou(particle.velocity) * 0.1 * self.camera.zoom;
                     draw.line()
                         .start(pt2(screen_pos.x, screen_pos.y))
                         .end(pt2(vel_end.x, vel_end.y))
@@ -371,9 +380,9 @@ impl ParticleRenderer {
         );
 
         for particle in &system.particles {
-            let screen_pos = self.camera.world_to_screen(particle.position, screen_size);
+            let screen_pos = self.camera.world_to_screen(glam_to_nannou(particle.position), screen_size);
             let velocity_scaled = particle.velocity * 10.0 * self.camera.zoom;
-            let end_pos = screen_pos + velocity_scaled;
+            let end_pos = screen_pos + glam_to_nannou(velocity_scaled);
 
             draw.line()
                 .start(pt2(screen_pos.x, screen_pos.y))
@@ -414,9 +423,9 @@ impl ParticleRenderer {
         );
 
         for particle in &system.particles {
-            let screen_pos = self.camera.world_to_screen(particle.position, screen_size);
+            let screen_pos = self.camera.world_to_screen(glam_to_nannou(particle.position), screen_size);
             let force_scaled = particle.acceleration * particle.mass * 50.0 * self.camera.zoom;
-            let end_pos = screen_pos + force_scaled;
+            let end_pos = screen_pos + glam_to_nannou(force_scaled);
 
             draw.line()
                 .start(pt2(screen_pos.x, screen_pos.y))
@@ -474,7 +483,7 @@ impl ParticleRenderer {
     }
 
     pub fn handle_mouse_input(&mut self, mouse_pos: Vec2, screen_size: Vec2) {
-        let world_pos = self.camera.screen_to_world(mouse_pos, screen_size);
+        let _world_pos = self.camera.screen_to_world(mouse_pos, screen_size);
         // Could be used for interaction, for now just update camera target
         // self.camera.set_target(world_pos);
     }
@@ -498,7 +507,7 @@ impl ParticleRenderer {
     pub fn focus_on_particles(&mut self, system: &ParticleSystem) {
         if !system.particles.is_empty() {
             let center = system.center_of_mass();
-            self.camera.set_target(center);
+            self.camera.set_target(glam_to_nannou(center));
         }
     }
 }

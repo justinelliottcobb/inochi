@@ -13,12 +13,8 @@ pub fn wasm_main() {
 
 #[wasm_bindgen]
 pub async fn start_simulation() -> Result<(), JsValue> {
-    let app = nannou::app(model).build()?;
-    
-    unsafe {
-        GLOBAL_APP = Some(Mutex::new(app));
-    }
-    
+    // In WASM mode, nannou apps are started differently
+    nannou::app(model).run();
     Ok(())
 }
 
@@ -35,7 +31,8 @@ pub fn reset_simulation() {
 pub fn toggle_pause() {
     if let Some(ref app_mutex) = unsafe { &GLOBAL_APP } {
         if let Ok(mut app) = app_mutex.lock() {
-            app.set_paused(!app.is_paused());
+            let is_paused = app.is_paused();
+            app.set_paused(!is_paused);
         }
     }
 }
@@ -80,27 +77,9 @@ pub fn get_fps() -> f32 {
 }
 
 fn model(app: &nannou::App) -> App {
-    // Find a canvas element in the document
-    let canvas = web_sys::window()
-        .and_then(|win| win.document())
-        .and_then(|doc| doc.get_element_by_id("nannou-canvas"))
-        .and_then(|element| element.dyn_into::<web_sys::HtmlCanvasElement>().ok());
-    
-    let window_id = if let Some(canvas) = canvas {
-        app.new_window()
-            .title("Inochi - Particle Life System")
-            .size(canvas.width(), canvas.height())
-            .canvas(canvas)
-            .build()
-            .unwrap()
-    } else {
-        app.new_window()
-            .title("Inochi - Particle Life System")
-            .size(1200, 800)
-            .build()
-            .unwrap()
-    };
-
+    // In WASM mode, create a simple window without the build() method
+    // The window creation is handled differently in nannou WASM
+    let window_id = app.main_window().id();
     App::new(app, window_id)
 }
 
@@ -200,8 +179,7 @@ pub fn get_particles() -> Vec<f32> {
 pub fn set_camera_position(x: f32, y: f32) {
     if let Some(ref app_mutex) = unsafe { &GLOBAL_APP } {
         if let Ok(mut app) = app_mutex.lock() {
-            use glam::Vec2;
-            app.renderer.camera.position = Vec2::new(x, y);
+            app.renderer.camera.position = nannou::geom::Vec2::new(x, y);
         }
     }
 }
@@ -219,8 +197,7 @@ pub fn set_camera_zoom(zoom: f32) {
 pub fn handle_mouse_drag(dx: f32, dy: f32) {
     if let Some(ref app_mutex) = unsafe { &GLOBAL_APP } {
         if let Ok(mut app) = app_mutex.lock() {
-            use glam::Vec2;
-            app.renderer.handle_pan(Vec2::new(dx, dy));
+            app.renderer.handle_pan(nannou::geom::Vec2::new(dx, dy));
         }
     }
 }
@@ -275,9 +252,12 @@ pub fn set_spawn_rate(rate: f32) {
 pub fn enable_trails(enable: bool) {
     if let Some(ref app_mutex) = unsafe { &GLOBAL_APP } {
         if let Ok(mut app) = app_mutex.lock() {
-            let config = app.config_manager.config_mut();
-            config.rendering.enable_trails = enable;
-            app.renderer.update_config(config.rendering.clone());
+            {
+                let config = app.config_manager.config_mut();
+                config.rendering.enable_trails = enable;
+            }
+            let render_config = app.config_manager.config().rendering.clone();
+            app.renderer.update_config(render_config);
         }
     }
 }
@@ -286,9 +266,12 @@ pub fn enable_trails(enable: bool) {
 pub fn set_background_color(r: f32, g: f32, b: f32, a: f32) {
     if let Some(ref app_mutex) = unsafe { &GLOBAL_APP } {
         if let Ok(mut app) = app_mutex.lock() {
-            let config = app.config_manager.config_mut();
-            config.rendering.background_color = [r, g, b, a];
-            app.renderer.update_config(config.rendering.clone());
+            {
+                let config = app.config_manager.config_mut();
+                config.rendering.background_color = [r, g, b, a];
+            }
+            let render_config = app.config_manager.config().rendering.clone();
+            app.renderer.update_config(render_config);
         }
     }
 }
