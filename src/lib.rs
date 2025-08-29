@@ -24,6 +24,7 @@ pub struct App {
     pub renderer: ParticleRenderer,
     pub config_manager: ConfigManager,
     pub spatial: Option<SpatialPartitioning>,
+    #[cfg(not(target_arch = "wasm32"))]
     pub egui: Egui,
     pub ui_state: UiState,
     pub performance_stats: PerformanceStats,
@@ -56,7 +57,7 @@ pub struct PerformanceStats {
 }
 
 impl App {
-    pub fn new(_app: &nannou::App, window: nannou::window::Id) -> Self {
+    pub fn new(_app: &nannou::App, _window: nannou::window::Id) -> Self {
         let config_manager = ConfigManager::new();
         let config = config_manager.config();
         
@@ -78,8 +79,11 @@ impl App {
             None
         };
 
-        let window_ref = _app.window(window).unwrap();
-        let egui = Egui::from_window(&window_ref);
+        #[cfg(not(target_arch = "wasm32"))]
+        let egui = {
+            let window_ref = _app.window(_window).unwrap();
+            Egui::from_window(&window_ref)
+        };
 
         Self {
             particle_system,
@@ -87,6 +91,7 @@ impl App {
             renderer,
             config_manager,
             spatial,
+            #[cfg(not(target_arch = "wasm32"))]
             egui,
             ui_state: UiState::default(),
             performance_stats: PerformanceStats::default(),
@@ -151,17 +156,21 @@ impl App {
         self.performance_stats.render_time_ms = start_time.elapsed().as_millis() as f32;
         
         // Draw UI
-        self.egui.set_elapsed_time(std::time::Duration::from_secs_f64(0.016)); // ~60fps
-        // Temporarily comment out UI to resolve borrow checker issue
-        // TODO: Fix UI rendering with proper egui integration
-        // {
-        //     let ctx = self.egui.begin_frame();
-        //     self.draw_ui(&ctx);
-        // }
-        // let _platform_output = self.egui.end_frame();
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            self.egui.set_elapsed_time(std::time::Duration::from_secs_f64(0.016)); // ~60fps
+            // Temporarily comment out UI to resolve borrow checker issue
+            // TODO: Fix UI rendering with proper egui integration
+            // {
+            //     let ctx = self.egui.begin_frame();
+            //     self.draw_ui(&ctx);
+            // }
+            // let _platform_output = self.egui.end_frame();
+        }
     }
 
     pub fn raw_window_event(&mut self, _app: &nannou::App, event: &nannou::winit::event::WindowEvent) {
+        #[cfg(not(target_arch = "wasm32"))]
         self.egui.handle_raw_event(event);
         
         // Handle mouse events for camera control
@@ -463,7 +472,7 @@ impl App {
         _ui.label("and creation of custom force interactions.");
     }
 
-    fn apply_preset(&mut self, preset: Preset) {
+    pub fn apply_preset(&mut self, preset: Preset) {
         self.config_manager.apply_preset(preset.clone());
         self.current_preset = Some(preset.clone());
         
@@ -491,7 +500,7 @@ impl App {
         }
     }
 
-    fn reset_simulation(&mut self) {
+    pub fn reset_simulation(&mut self) {
         if let Some(ref preset) = self.current_preset.clone() {
             self.apply_preset(preset.clone());
         } else {
@@ -500,7 +509,7 @@ impl App {
         self.renderer.reset_camera();
     }
 
-    fn apply_current_config(&mut self) {
+    pub fn apply_current_config(&mut self) {
         let config = self.config_manager.config().clone();
         
         // Update physics engine
@@ -535,5 +544,28 @@ impl App {
 
     pub fn is_paused(&self) -> bool {
         self.paused
+    }
+
+    // Simplified update for WASM that avoids borrowing issues
+    #[cfg(target_arch = "wasm32")]
+    pub fn update_wasm(&mut self, delta_time: f32) {
+        if !self.paused {
+            // Update physics
+            self.physics_engine.update(&mut self.particle_system);
+            
+            // Update particle system
+            self.particle_system.update(delta_time);
+            
+            // Update performance stats
+            self.performance_stats.particle_count = self.particle_system.particle_count();
+            self.frame_count += 1;
+            self.time_accumulator += delta_time;
+            
+            if self.time_accumulator >= 1.0 {
+                self.performance_stats.fps = self.frame_count as f32 / self.time_accumulator;
+                self.frame_count = 0;
+                self.time_accumulator = 0.0;
+            }
+        }
     }
 }
