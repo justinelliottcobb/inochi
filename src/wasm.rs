@@ -1,6 +1,16 @@
 use wasm_bindgen::prelude::*;
-use crate::{App, config::Preset};
+use crate::{
+    App, 
+    config::{Preset, ConfigManager},
+    forces::PhysicsEngine,
+    renderer::ParticleRenderer,
+    presets::PresetManager,
+    spatial::SpatialPartitioning,
+    UiState,
+    PerformanceStats,
+};
 use std::sync::Mutex;
+use glam::Vec2;
 
 // Console logging for WASM
 #[wasm_bindgen]
@@ -26,19 +36,70 @@ pub fn wasm_main() {
 pub async fn start_simulation() -> Result<(), JsValue> {
     console_log!("Starting simulation in WASM mode...");
     
-    // For now, just create a simple test to verify WASM is working
-    // The full nannou integration needs more complex setup
     unsafe {
         if GLOBAL_APP.is_none() {
-            // Create a dummy app for testing
             console_log!("Creating application instance...");
-            // Note: This is a simplified version for testing
-            // Full nannou WASM integration would require proper canvas binding
-            console_log!("Application ready (test mode)");
+            
+            // Create a simplified App for WASM without nannou dependencies
+            let app = create_wasm_app();
+            GLOBAL_APP = Some(Mutex::new(app));
+            
+            console_log!("Application initialized with {} particles", 
+                GLOBAL_APP.as_ref().unwrap().lock().unwrap().get_particle_count());
         }
     }
     
     Ok(())
+}
+
+// Helper function to create App without nannou window
+fn create_wasm_app() -> App {
+    console_log!("Initializing WASM App...");
+    
+    let config_manager = ConfigManager::new();
+    let config = config_manager.config();
+    
+    // Create particle system with default preset
+    let particle_system = PresetManager::create_particle_system_from_preset(
+        &Preset::ParticleLife, 
+        config
+    );
+    
+    console_log!("Created particle system with {} particles", particle_system.particle_count());
+    
+    let physics_engine = PhysicsEngine::new(config.physics.clone());
+    let renderer = ParticleRenderer::new(config.rendering.clone());
+    
+    let spatial = if config.performance.enable_spatial_partitioning {
+        Some(SpatialPartitioning::new_quadtree(
+            (Vec2::new(-500.0, -500.0), Vec2::new(500.0, 500.0)),
+            10,
+            8
+        ))
+    } else {
+        None
+    };
+    
+    // For WASM, we need to create Egui differently or skip it
+    // Since we're not using UI in WASM for now, we'll create a minimal setup
+    // This is a workaround - proper WASM UI would need WebGL integration
+    
+    let app = App {
+        particle_system,
+        physics_engine,
+        renderer,
+        config_manager,
+        spatial,
+        ui_state: UiState::default(),
+        performance_stats: PerformanceStats::default(),
+        time_accumulator: 0.0,
+        frame_count: 0,
+        paused: false,
+        current_preset: Some(Preset::ParticleLife),
+    };
+    
+    console_log!("WASM App created successfully");
+    app
 }
 
 #[wasm_bindgen]
@@ -99,12 +160,15 @@ pub fn get_fps() -> f32 {
     0.0
 }
 
-// Note: Full nannou WASM integration would require a proper model function
-// This is commented out for now as we're doing a simpler test
-// fn model(app: &nannou::App) -> App {
-//     let window_id = app.main_window().id();
-//     App::new(app, window_id)
-// }
+// Update function to be called from JavaScript animation loop
+#[wasm_bindgen]
+pub fn update_simulation(delta_time: f32) {
+    if let Some(ref app_mutex) = unsafe { &GLOBAL_APP } {
+        if let Ok(mut app) = app_mutex.lock() {
+            app.update_wasm(delta_time);
+        }
+    }
+}
 
 
 #[wasm_bindgen]

@@ -110,11 +110,16 @@
             toggle_pause,
             change_preset,
             get_particle_count,
-            get_fps
+            get_fps,
+            update_simulation,
+            get_particles
         } from './dist/inochi.js';
 
         let isInitialized = false;
         let isPaused = false;
+        let canvas = null;
+        let ctx = null;
+        let lastTime = performance.now();
 
         async function run() {
             console.log('Starting WASM initialization...');
@@ -136,12 +141,18 @@
                 await start_simulation();
                 console.log('Simulation started successfully');
                 
+                // Setup canvas
+                canvas = document.getElementById('nannou-canvas');
+                canvas.width = 1200;
+                canvas.height = 800;
+                ctx = canvas.getContext('2d');
+                
                 isInitialized = true;
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('app-container').style.display = 'block';
                 
-                // Start the info update loop
-                updateInfo();
+                // Start the animation loop
+                requestAnimationFrame(animate);
                 
             } catch (error) {
                 console.error('Failed to initialize:', error);
@@ -156,6 +167,62 @@
             }
         }
 
+        function animate(currentTime) {
+            if (!isInitialized) return;
+            
+            const deltaTime = (currentTime - lastTime) / 1000.0;
+            lastTime = currentTime;
+            
+            // Update simulation
+            update_simulation(deltaTime);
+            
+            // Render particles
+            renderParticles();
+            
+            // Update info
+            updateInfo();
+            
+            requestAnimationFrame(animate);
+        }
+
+        function renderParticles() {
+            if (!ctx) return;
+            
+            // Clear canvas
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Get particle data
+            const particleData = get_particles();
+            
+            // Each particle has 10 values: x, y, vx, vy, r, g, b, a, size, species_id
+            const particlesPerData = 10;
+            const particleCount = particleData.length / particlesPerData;
+            
+            // Transform to center the view
+            ctx.save();
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            
+            // Draw particles
+            for (let i = 0; i < particleCount; i++) {
+                const idx = i * particlesPerData;
+                const x = particleData[idx];
+                const y = particleData[idx + 1];
+                const r = particleData[idx + 4];
+                const g = particleData[idx + 5];
+                const b = particleData[idx + 6];
+                const a = particleData[idx + 7];
+                const size = particleData[idx + 8];
+                
+                ctx.fillStyle = `rgba(${Math.floor(r * 255)}, ${Math.floor(g * 255)}, ${Math.floor(b * 255)}, ${a})`;
+                ctx.beginPath();
+                ctx.arc(x, -y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            ctx.restore();
+        }
+
         function updateInfo() {
             if (!isInitialized) return;
             
@@ -168,8 +235,6 @@
             } catch (error) {
                 console.warn('Error updating info:', error);
             }
-            
-            requestAnimationFrame(updateInfo);
         }
 
         // Global functions for buttons
