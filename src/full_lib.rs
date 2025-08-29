@@ -5,8 +5,6 @@ pub mod spatial;
 pub mod renderer;
 pub mod presets;
 
-#[cfg(all(target_arch = "wasm32", feature = "web"))]
-pub mod wasm;
 
 use nannou::prelude::*;
 use nannou_egui::{self, egui, Egui};

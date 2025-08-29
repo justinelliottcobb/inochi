@@ -103,6 +103,15 @@
         </div>
     </div>
 
+    <script>
+        // Polyfill for queueMicrotask if not supported
+        if (typeof queueMicrotask === 'undefined') {
+            window.queueMicrotask = function(callback) {
+                Promise.resolve().then(callback);
+            };
+        }
+    </script>
+    
     <script type="module">
         import init, { 
             start_simulation, 
@@ -110,7 +119,8 @@
             toggle_pause,
             change_preset,
             get_particle_count,
-            get_fps
+            get_fps,
+            update_and_render
         } from './dist/inochi.js';
 
         let isInitialized = false;
@@ -133,14 +143,19 @@
                 
                 // Start the simulation
                 console.log('Starting simulation...');
-                await start_simulation();
-                console.log('Simulation started successfully');
+                const success = start_simulation();
+                if (success) {
+                    console.log('Simulation started successfully');
+                } else {
+                    throw new Error('Failed to start simulation - check console for details');
+                }
                 
                 isInitialized = true;
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('app-container').style.display = 'block';
                 
-                // Start the info update loop
+                // Start the render and info update loops
+                startRenderLoop();
                 updateInfo();
                 
             } catch (error) {
@@ -154,6 +169,25 @@
                     <small>Check browser console for more details</small>
                 `;
             }
+        }
+
+        function startRenderLoop() {
+            if (!isInitialized) return;
+            
+            function renderFrame() {
+                if (isInitialized) {
+                    try {
+                        update_and_render();
+                    } catch (error) {
+                        console.warn('Render error:', error);
+                    }
+                }
+                requestAnimationFrame(renderFrame);
+            }
+            
+            // Start the render loop
+            requestAnimationFrame(renderFrame);
+            console.log('JavaScript render loop started');
         }
 
         function updateInfo() {

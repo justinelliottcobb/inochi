@@ -31,7 +31,6 @@ env_logger = "0.10"
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 nannou = { version = "0.19", features = ["wasm-experimental"] }
 wasm-bindgen = { version = "0.2", optional = true }
-wasm-bindgen-futures = "0.4"
 console_error_panic_hook = "0.1"
 wee_alloc = "0.4"
 web-sys = { version = "0.3", features = [
@@ -41,6 +40,11 @@ web-sys = { version = "0.3", features = [
   "HtmlCanvasElement",
   "Window",
   "Navigator",
+  "WebGl2RenderingContext",
+  "WebGlProgram",
+  "WebGlShader",
+  "WebGlBuffer",
+  "CanvasRenderingContext2d",
 ] }
 js-sys = "0.3"
 
