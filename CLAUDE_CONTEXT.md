@@ -45,6 +45,8 @@ src/
 - **rayon**: Multithreading
 - **wasm-bindgen**: Web deployment
 - **web-sys**: WebGPU API bindings
+- **actix-web** 4.4: Rust-based web server for WASM deployment
+- **actix-files** 0.6: Static file serving
 
 ## Performance Features
 - Spatial partitioning (QuadTree/Grid)
@@ -66,8 +68,10 @@ src/
 ✅ **BOTH DESKTOP AND WASM BUILDS WORKING**
 
 ## File Status
-- `Cargo.toml`: Dependencies configured for desktop + web
-- `wasm-build.sh`: Web build script with HTML/JS wrapper
+- `Cargo.toml`: Dependencies configured for desktop + web + actix-web server
+- `wasm-build.sh`: Web build script with HTML/JS wrapper (updated for Rust server)
+- `src/bin/server.rs`: Actix-web server for serving WASM build
+- `serve.sh`: Convenience script for starting the web server
 - `examples/`: Basic simulation + custom forces demos
 - `presets/`: JSON configs for classic_particle_life, gravity_system
 - `www/`: Web deployment assets
@@ -92,6 +96,13 @@ src/
 - Generated complete WASM package (2.2MB .wasm + JS bindings)
 - Full browser support with interactive controls
 
+**Web Server:** ✅ RUST-BASED ACTIX-WEB
+- Replaced Python SimpleHTTPServer with actix-web
+- Configurable HOST/PORT via environment variables
+- Proper CORS headers for WebAssembly
+- Binds to 0.0.0.0 by default for network accessibility
+- Default port 3000 (configurable)
+
 Both builds now compile and run successfully!
 
 ## Next Development Areas (if continuing)
@@ -108,9 +119,13 @@ Both builds now compile and run successfully!
 # Desktop
 cargo run --release
 
-# Web
+# Web - Build WASM
 ./wasm-build.sh
-cd www && python3 serve.py
+
+# Web - Serve with Rust server (port 3000)
+cargo run --bin server
+# Or use convenience script:
+./serve.sh
 
 # Test
 cargo test
