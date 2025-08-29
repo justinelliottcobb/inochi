@@ -23,6 +23,10 @@ getrandom = { version = "0.2", features = ["js"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 nannou = "0.19"
+actix-web = "4.4"
+actix-files = "0.6"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+env_logger = "0.10"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 nannou = { version = "0.19", features = ["wasm-experimental"] }
