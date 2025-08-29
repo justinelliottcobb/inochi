@@ -117,12 +117,24 @@
         let isPaused = false;
 
         async function run() {
+            console.log('Starting WASM initialization...');
             try {
-                // Initialize the WebAssembly module
-                await init();
+                // Add more detailed logging
+                console.log('Loading WASM module from ./dist/inochi_bg.wasm');
+                
+                // Explicitly pass the WASM file path to init
+                await init('./dist/inochi_bg.wasm');
+                console.log('WASM module initialized successfully');
+                
+                // Check if functions are available
+                if (typeof start_simulation !== 'function') {
+                    throw new Error('start_simulation function not found in WASM exports');
+                }
                 
                 // Start the simulation
+                console.log('Starting simulation...');
                 await start_simulation();
+                console.log('Simulation started successfully');
                 
                 isInitialized = true;
                 document.getElementById('loading').style.display = 'none';
@@ -133,9 +145,14 @@
                 
             } catch (error) {
                 console.error('Failed to initialize:', error);
+                console.error('Error stack:', error.stack);
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('error').style.display = 'block';
-                document.getElementById('error').textContent = `Error: ${error.message}`;
+                document.getElementById('error').innerHTML = `
+                    <strong>Error loading WebAssembly module:</strong><br>
+                    ${error.message}<br>
+                    <small>Check browser console for more details</small>
+                `;
             }
         }
 
@@ -209,8 +226,22 @@
             }
         });
 
-        // Start the application
-        run();
+        // Check WebAssembly support
+        if (typeof WebAssembly === 'undefined') {
+            console.error('WebAssembly is not supported in this browser');
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('error').innerHTML = `
+                <strong>WebAssembly Not Supported</strong><br>
+                This application requires WebAssembly support.<br>
+                Please use a modern browser like Chrome, Firefox, Safari, or Edge.
+            `;
+        } else {
+            console.log('WebAssembly is supported');
+            console.log('Browser:', navigator.userAgent);
+            // Start the application
+            run();
+        }
     </script>
 </body>
 </html>

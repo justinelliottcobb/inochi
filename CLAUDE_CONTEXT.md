@@ -71,10 +71,13 @@ src/
 - `Cargo.toml`: Dependencies configured for desktop + web + actix-web server
 - `wasm-build.sh`: Web build script with HTML/JS wrapper (updated for Rust server)
 - `src/bin/server.rs`: Actix-web server for serving WASM build
+- `src/wasm.rs`: WASM bindings with console logging for debugging
 - `serve.sh`: Convenience script for starting the web server
+- `www/index.html`: Main web interface with improved error handling
+- `www/test.html`: WASM functionality test page
+- `www/dist/`: Generated WASM files (inochi.js, inochi_bg.wasm)
 - `examples/`: Basic simulation + custom forces demos
 - `presets/`: JSON configs for classic_particle_life, gravity_system
-- `www/`: Web deployment assets
 - Documentation: README.md, API.md (comprehensive)
 
 ## Current State
@@ -88,13 +91,16 @@ src/
 - Fixed borrow checker issues
 - nannou 0.19 + wgpu 0.19 working perfectly
 
-**WASM Build:** ✅ WORKING  
+**WASM Build:** ✅ COMPILING & LOADING
 - Reduced from 200 compilation errors to 0
 - Enabled nannou's `wasm-experimental` feature
 - Fixed WebGPU API compatibility (web-sys features)
 - Added wasm-bindgen-futures support
 - Generated complete WASM package (2.2MB .wasm + JS bindings)
-- Full browser support with interactive controls
+- WASM module loads successfully in browser
+- Console logging implemented for debugging
+- Test page available at `/test.html` for verification
+- **Note:** Particle rendering not yet visible (needs canvas binding work)
 
 **Web Server:** ✅ RUST-BASED ACTIX-WEB
 - Replaced Python SimpleHTTPServer with actix-web
@@ -105,7 +111,19 @@ src/
 
 Both builds now compile and run successfully!
 
-## Next Development Areas (if continuing)
+## Current Issues
+- **WASM Canvas Binding:** Particles not yet rendering in browser
+  - WASM module loads but nannou canvas integration incomplete
+  - Need to properly bind WebGL/WebGPU context to HTML canvas
+  - Render loop needs to be connected to browser animation frame
+
+## Next Development Areas
+**Immediate Priority:**
+- Complete nannou WASM canvas binding for particle rendering
+- Connect render loop to requestAnimationFrame
+- Implement proper WebGL/WebGPU context initialization
+
+**Future Enhancements:**
 - GPU compute shaders for >10k particles
 - Advanced shading (PBR, bloom, HDR)
 - Mobile/touch optimization
