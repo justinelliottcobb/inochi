@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>WASM Test</title>
+</head>
+<body>
+    <h1>WASM Loading Test</h1>
+    <div id="status">Loading...</div>
+    <div id="result"></div>
+    
+    <script type="module">
+        async function test() {
+            const statusEl = document.getElementById('status');
+            const resultEl = document.getElementById('result');
+            
+            try {
+                statusEl.textContent = 'Importing module...';
+                const module = await import('./dist/inochi.js');
+                
+                statusEl.textContent = 'Initializing WASM...';
+                await module.default('./dist/inochi_bg.wasm');
+                
+                statusEl.textContent = 'WASM loaded! Testing functions...';
+                
+                // Test basic functions
+                const results = [];
+                
+                if (typeof module.start_simulation === 'function') {
+                    results.push('✅ start_simulation found');
+                    try {
+                        await module.start_simulation();
+                        results.push('✅ start_simulation called successfully');
+                    } catch (e) {
+                        results.push(`❌ start_simulation error: ${e.message}`);
+                    }
+                }
+                
+                if (typeof module.get_particle_count === 'function') {
+                    results.push('✅ get_particle_count found');
+                    const count = module.get_particle_count();
+                    results.push(`✅ Particle count: ${count}`);
+                }
+                
+                if (typeof module.get_fps === 'function') {
+                    results.push('✅ get_fps found');
+                    const fps = module.get_fps();
+                    results.push(`✅ FPS: ${fps}`);
+                }
+                
+                resultEl.innerHTML = results.join('<br>');
+                statusEl.textContent = 'Test complete!';
+                
+            } catch (error) {
+                statusEl.textContent = 'Error!';
+                resultEl.innerHTML = `<span style="color: red">Error: ${error.message}<br>Stack: ${error.stack}</span>`;
+                console.error('Test failed:', error);
+            }
+        }
+        
+        test();
+    </script>
+</body>
+</html>
